@@ -1,0 +1,62 @@
+plugins {
+  id 'java'
+  id 'application'
+  id "com.github.johnrengelman.shadow" version "1.2.1"
+}
+
+project.ext.sourceCompatibility = JavaVersion.VERSION_1_8
+project.ext.targetCompatibility = JavaVersion.VERSION_1_8
+
+repositories {
+  jcenter()
+}
+
+sourceSets {
+  dagger {
+    java {
+      srcDirs = ['src/dagger/java']
+    }
+  }
+}
+
+configurations {
+  compileDagger
+}
+
+compileJava {
+  description = "dagger annotation processor is loaded automatically from classpath"
+  sourceSets.dagger.java.srcDirs*.mkdirs()
+  classpath += configurations.compileDagger
+  options.compilerArgs += [
+      '-s', sourceSets.dagger.java.srcDirs.iterator().next()
+  ]
+}
+
+mainClassName = "learning.LearningApplication"
+
+clean {
+  description = "delete files in generated source directory tree"
+  delete fileTree(dir: sourceSets.dagger.java.srcDirs.iterator().next())
+}
+
+dependencies {
+
+  ext.daggerVersion = "2.0.1"
+
+  compile(
+      "com.google.dagger:dagger:${daggerVersion}",
+      "com.google.guava:guava:18.0")
+
+  compileDagger(
+      "com.google.dagger:dagger-compiler:${daggerVersion}")
+
+  testCompile(
+      "junit:junit:4.12",
+      "com.google.truth:truth:0.27"
+  )
+
+}
+
+task wrapper(type: Wrapper) {
+  gradleVersion = '2.4'
+}
